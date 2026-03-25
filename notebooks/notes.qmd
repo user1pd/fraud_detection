@@ -162,11 +162,33 @@ plt.show()
 
 ```{python}
 
+legit = transactions_df[transactions_df[TARGET_COL] == 0]['TransactionAmt']
+fraud = transactions_df[transactions_df[TARGET_COL] == 1]['TransactionAmt']
+
 txn_amount_summary = pd.DataFrame({
-    target_labels[0]: transactions_df[transactions_df[TARGET_COL] == 0]['TransactionAmt'].describe(),
-    target_labels[1]: transactions_df[transactions_df[TARGET_COL] == 1]['TransactionAmt'].describe()
+    target_labels[0]: legit.describe(),
+    target_labels[1]: fraud.describe()
 })
 txn_amount_summary
+
+```
+
+The data is highly skewed, so using a logscale makes the distribution readable and meaningful.
+
+Most transactions (fraud or not) are relatively low-value. However, fraud is slightly more concentrated at lower amounts.
+```{python}
+
+fig, ax = plt.subplots()
+bins = np.logspace(0, 5, 80)
+ax.hist(legit, bins=bins, alpha=0.6, color=target_colors[0], label = target_labels[0], density=True)
+ax.hist(fraud, bins=bins, alpha=0.6, color=target_colors[1], label = target_labels[1], density=True)
+ax.set_xscale('log')
+ax.set_xlabel('Transaction amount (log scale)')
+ax.set_ylabel('Density')
+ax.set_title('Transaction Amount Distribution')
+ax.legend()
+plt.tight_layout()
+plt.show()
 
 ```
 
