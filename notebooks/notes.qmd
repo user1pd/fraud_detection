@@ -1,0 +1,179 @@
+---
+title: "IEEE-CIS Fraud Detection - Exploratory Data Analsysis"
+
+format: html
+editor: visual
+engine: jupyter
+---
+
+# Setup
+
+```{python}
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mtick
+
+# CONFIG
+PATH = r"C:\Users\user\Downloads\files\fraud_detection"
+IDENTITY_PATH = r"C:\Users\user\Downloads\files\fraud_detection\data\raw\train_identity.csv"
+TRANSACTIONS_PATH = r"C:\Users\user\Downloads\files\fraud_detection\data\raw\train_transaction.csv"
+
+TARGET_COL = "isFraud"
+target_labels = ["Legitimate", "Fraudulent"]
+target_colors = ["darkblue", "darkred"]
+
+```
+
+# Load the data
+
+```{python}
+
+transactions_df = pd.read_csv(TRANSACTIONS_PATH)
+identity_df = pd.read_csv(IDENTITY_PATH)
+
+print(f"Transactions dataset has: {transactions_df.shape[0]:,} rows and {transactions_df.shape[1]} columns")
+print(f"Identity dataset has: {identity_df.shape[0]:,} rows and {identity_df.shape[1]} columns")
+
+
+# merge
+df = transactions_df.merge(
+    identity_df,
+    how='right'
+)
+
+
+display(transactions_df.head())
+display(identity_df.head())
+
+# list(transactions_df.columns)
+# list(identity_df.columns)
+
+```
+
+## Columns
+
+**Transaction Table**
+TransactionDT: timedelta from a given reference datetime (not an actual timestamp)
+TransactionAMT: transaction payment amount in USD
+ProductCD: product code, the product for each transaction
+card1 - card6: payment card information, such as card type, card category, issue bank, country, etc.
+addr: address
+dist: distance
+P_ and (R__) emaildomain: purchaser and recipient email domain
+C1-C14: counting, such as how many addresses are found to be associated with the payment card, etc. The actual meaning is masked.
+D1-D15: timedelta, such as days between previous transaction, etc.
+M1-M9: match, such as names on card and address, etc.
+Vxxx: Vesta engineered rich features, including ranking, counting, and other entity relations.
+Categorical Features: ProductCD card1 - card6 addr1, addr2 P_emaildomain R_emaildomain M1 - M9
+
+**Identity Table**
+Variables in this table are identity information – network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions. They're collected by Vesta’s fraud protection system and digital security partners. (The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)
+
+
+# TARGET variable
+
+```{python}
+
+counts = transactions_df[TARGET_COL].value_counts()
+fraud_rate = transactions_df[TARGET_COL].mean()
+
+print(f"Total transactions: {transactions_df.shape[0]:,}")
+print(f"Fraudulent transactions: {counts[1]:,} ({fraud_rate:.2%})")
+print(f"Legitimate transactions: {counts[0]:,} ({1-fraud_rate:.2%})")
+
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(5, 4))
+bars = ax.bar(
+    target_labels,
+    counts,
+    color=target_colors,
+    width=0.5
+)
+ax.set_ylabel("Number of transactions")
+ax.set_title("Target class distribution")
+for bar, val in zip(bars, counts):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height()+1000, f'{val:,}', ha='center', fontsize=10)
+plt.show()
+```
+
+# Time patterns
+
+TransactionDT values represent second elapsed from a reference point (not an actual timestamp). 
+However, we can extract from it day of the week and hour of day, which may be strog fraud signals.
+
+```{python}
+
+nr_seconds_per_day = 24*60*60
+transactions_df['hour'] = (transactions_df['TransactionDT'] % nr_seconds_per_day // 3600).astype(int)
+transactions_df['day_of_week'] = (transactions_df['TransactionDT'] % (nr_seconds_per_day*7) // nr_seconds_per_day).astype(int)
+
+```
+
+```{python}
+
+hourly_rate = transactions_df.groupby("hour")[TARGET_COL].mean().reset_index()
+fig, ax = plt.subplots(figsize=(15, 5))
+ax.bar(
+    hourly_rate['hour'],
+    hourly_rate[TARGET_COL]*100,
+    color=target_colors[1],
+    alpha=0.8
+)
+ax.axhline(fraud_rate*100, color="black", linestyle='--', linewidth=1, label=f'Overall fraud rate ({fraud_rate:.1%})')
+ax.set_xlabel("Hour of day")
+ax.set_ylabel("Fraud Rate (%)")
+ax.legend()
+ax.set_title("Fraud Rate by Hour of Day")
+plt.tight_layout()
+plt.show()
+
+```
+
+
+```{python}
+
+day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+daily_rate = transactions_df.groupby("day_of_week")[TARGET_COL].mean().reset_index()
+
+fig, ax = plt.subplots(figsize=(15, 5))
+ax.bar(
+    daily_rate['day_of_week'],
+    daily_rate[TARGET_COL]*100,
+    color=target_colors[1],
+    alpha=0.8
+)
+ax.set_xticks(range(7))
+ax.set_xticklabels(day_names)
+ax.axhline(fraud_rate*100, color="black", linestyle='--', linewidth=1, label=f'Overall fraud rate ({fraud_rate:.1%})')
+ax.set_xlabel("Day of week")
+ax.set_ylabel("Fraud Rate (%)")
+ax.legend()
+ax.set_title("Fraud Rate by Day of week")
+plt.tight_layout()
+plt.show()
+
+```
+
+# Transaction amount
+
+```{python}
+
+txn_amount_summary = pd.DataFrame({
+    target_labels[0]: transactions_df[transactions_df[TARGET_COL] == 0]['TransactionAmt'].describe(),
+    target_labels[1]: transactions_df[transactions_df[TARGET_COL] == 1]['TransactionAmt'].describe()
+})
+txn_amount_summary
+
+```
+
+# V-features
+
+# Card features
+
+# Email domains
+
+
