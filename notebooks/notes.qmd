@@ -71,6 +71,20 @@ Categorical Features: ProductCD card1 - card6 addr1, addr2 P_emaildomain R_email
 **Identity Table**
 Variables in this table are identity information – network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions. They're collected by Vesta’s fraud protection system and digital security partners. (The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)
 
+## Missingness
+
+```{python}
+missing_rate = transactions_df.isnull().mean().sort_values(ascending=False)
+print("Total number of features: ", transactions_df.shape[1])
+print("Number of features with missing values: ", len(missing_rate[missing_rate>0]))
+
+for threshold in [0.9, 0.75, 0.5, 0.25, 0.1]:
+    n = (missing_rate > threshold).sum()
+    print(f"Columns with >{threshold:.0%} missing: {n}")
+
+print("Top 20 features with the highest share of missing values: \n", missing_rate.head(20))
+
+```
 
 # TARGET variable
 
@@ -194,8 +208,57 @@ plt.show()
 
 # V-features
 
+There're 339 anonymised V-features, which are Vesta engineered rich features, including ranking, counting, and other entity relations.
+
+```{python}
+
+v_cols = [c for c in transactions_df.columns if c.startswith('V')]
+v_missing = transactions_df[v_cols].isnull().mean()
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.plot(
+    range(len(v_cols)),
+    sorted(v_missing.values)
+)
+ax.axhline(0.5, color='black', linestyle='--', label="50% missing rate")
+ax.fill_between(
+    range(len(v_cols)),
+    sorted(v_missing.values),
+    alpha=0.2
+)
+ax.set_xlabel("V_feature rank, sorted by missing rate")
+ax.set_ylabel("Missing rate")
+ax.set_title("Missing rate across V-features")
+ax.legend()
+plt.show()
+
+```
+
 # Card features
 
+```{python}
+
+card_cols = [c for c in transactions_df.columns if c.startswith('card')]
+
+for card in card_cols:
+    tmp = transactions_df.groupby(card)[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean': 'fraud_rate', 'count':'n'}).sort_values(by='fraud_rate', ascending=False)
+
+    fig, ax = plt.subplots()
+    ax.bar(tmp.index, tmp['fraud_rate']*100, color=target_colors[1], alpha=0.8)
+    ax.axhline(fraud_rate*100, linestyle='--', color='black', linewidth=1)
+    ax.set_ylabel('Fraud rate (%)')
+    ax.set_title(f'Fraud rate by Card Type ({card})')
+    plt.tight_layout()
+    plt.show()
+
+
+# transactions_df.groupby('card6')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean': 'fraud_rate', 'count':'n'}).sort_values(by='fraud_rate', ascending=False)
+
+```
+
 # Email domains
+
+# Identity table
+
 
 
