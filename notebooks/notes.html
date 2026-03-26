@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Test</title>
+<title>IEEE-CIS Fraud Detection - Exploratory Data Analsysis</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -61,7 +61,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="notes_files/libs/clipboard/clipboard.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="notes_files/libs/clipboard/clipboard.min.js"></script>
 <script src="notes_files/libs/quarto-html/quarto.js" type="module"></script>
 <script src="notes_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="notes_files/libs/quarto-html/popper.min.js"></script>
@@ -72,6 +72,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="notes_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="notes_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="notes_files/libs/bootstrap/bootstrap-efbb37e9afcc02144ebbc7afd12a776f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -84,7 +87,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Test</h1>
+<h1 class="title">IEEE-CIS Fraud Detection - Exploratory Data Analsysis</h1>
 </div>
 
 
@@ -101,14 +104,714 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="start" class="level1">
-<h1>Start</h1>
-<div id="dee32e99" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Hello, world!"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<div id="6a1fc86f" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.ticker <span class="im">as</span> mtick</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># CONFIG</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>PATH <span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Users</span><span class="er">\</span><span class="vs">user</span><span class="dv">\D</span><span class="vs">ownloads</span><span class="ch">\f</span><span class="vs">iles</span><span class="ch">\f</span><span class="vs">raud_detection"</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>IDENTITY_PATH <span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Users</span><span class="er">\</span><span class="vs">user</span><span class="dv">\D</span><span class="vs">ownloads</span><span class="ch">\f</span><span class="vs">iles</span><span class="ch">\f</span><span class="vs">raud_detection</span><span class="dv">\d</span><span class="vs">ata</span><span class="ch">\r</span><span class="vs">aw</span><span class="ch">\t</span><span class="vs">rain_identity</span><span class="dv">.</span><span class="vs">csv"</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>TRANSACTIONS_PATH <span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Users</span><span class="er">\</span><span class="vs">user</span><span class="dv">\D</span><span class="vs">ownloads</span><span class="ch">\f</span><span class="vs">iles</span><span class="ch">\f</span><span class="vs">raud_detection</span><span class="dv">\d</span><span class="vs">ata</span><span class="ch">\r</span><span class="vs">aw</span><span class="ch">\t</span><span class="vs">rain_transaction</span><span class="dv">.</span><span class="vs">csv"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>TARGET_COL <span class="op">=</span> <span class="st">"isFraud"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>target_labels <span class="op">=</span> [<span class="st">"Legitimate"</span>, <span class="st">"Fraudulent"</span>]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>target_colors <span class="op">=</span> [<span class="st">"darkblue"</span>, <span class="st">"darkred"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="load-the-data" class="level1">
+<h1>Load the data</h1>
+<div id="89b0d7ef" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>transactions_df <span class="op">=</span> pd.read_csv(TRANSACTIONS_PATH)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>identity_df <span class="op">=</span> pd.read_csv(IDENTITY_PATH)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Transactions dataset has: </span><span class="sc">{</span>transactions_df<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">:,}</span><span class="ss"> rows and </span><span class="sc">{</span>transactions_df<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> columns"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Identity dataset has: </span><span class="sc">{</span>identity_df<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">:,}</span><span class="ss"> rows and </span><span class="sc">{</span>identity_df<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> columns"</span>)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># merge</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> transactions_df.merge(</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    identity_df,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    how<span class="op">=</span><span class="st">'right'</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>display(transactions_df.head())</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>display(identity_df.head())</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># list(transactions_df.columns)</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># list(identity_df.columns)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Hello, world!</code></pre>
+<pre><code>Transactions dataset has: 590,540 rows and 394 columns
+Identity dataset has: 144,233 rows and 41 columns</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">TransactionID</th>
+<th data-quarto-table-cell-role="th">isFraud</th>
+<th data-quarto-table-cell-role="th">TransactionDT</th>
+<th data-quarto-table-cell-role="th">TransactionAmt</th>
+<th data-quarto-table-cell-role="th">ProductCD</th>
+<th data-quarto-table-cell-role="th">card1</th>
+<th data-quarto-table-cell-role="th">card2</th>
+<th data-quarto-table-cell-role="th">card3</th>
+<th data-quarto-table-cell-role="th">card4</th>
+<th data-quarto-table-cell-role="th">card5</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">V330</th>
+<th data-quarto-table-cell-role="th">V331</th>
+<th data-quarto-table-cell-role="th">V332</th>
+<th data-quarto-table-cell-role="th">V333</th>
+<th data-quarto-table-cell-role="th">V334</th>
+<th data-quarto-table-cell-role="th">V335</th>
+<th data-quarto-table-cell-role="th">V336</th>
+<th data-quarto-table-cell-role="th">V337</th>
+<th data-quarto-table-cell-role="th">V338</th>
+<th data-quarto-table-cell-role="th">V339</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>2987000</td>
+<td>0</td>
+<td>86400</td>
+<td>68.5</td>
+<td>W</td>
+<td>13926</td>
+<td>NaN</td>
+<td>150.0</td>
+<td>discover</td>
+<td>142.0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>2987001</td>
+<td>0</td>
+<td>86401</td>
+<td>29.0</td>
+<td>W</td>
+<td>2755</td>
+<td>404.0</td>
+<td>150.0</td>
+<td>mastercard</td>
+<td>102.0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>2987002</td>
+<td>0</td>
+<td>86469</td>
+<td>59.0</td>
+<td>W</td>
+<td>4663</td>
+<td>490.0</td>
+<td>150.0</td>
+<td>visa</td>
+<td>166.0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>2987003</td>
+<td>0</td>
+<td>86499</td>
+<td>50.0</td>
+<td>W</td>
+<td>18132</td>
+<td>567.0</td>
+<td>150.0</td>
+<td>mastercard</td>
+<td>117.0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>2987004</td>
+<td>0</td>
+<td>86506</td>
+<td>50.0</td>
+<td>H</td>
+<td>4497</td>
+<td>514.0</td>
+<td>150.0</td>
+<td>mastercard</td>
+<td>102.0</td>
+<td>...</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 394 columns</p>
 </div>
 </div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">TransactionID</th>
+<th data-quarto-table-cell-role="th">id_01</th>
+<th data-quarto-table-cell-role="th">id_02</th>
+<th data-quarto-table-cell-role="th">id_03</th>
+<th data-quarto-table-cell-role="th">id_04</th>
+<th data-quarto-table-cell-role="th">id_05</th>
+<th data-quarto-table-cell-role="th">id_06</th>
+<th data-quarto-table-cell-role="th">id_07</th>
+<th data-quarto-table-cell-role="th">id_08</th>
+<th data-quarto-table-cell-role="th">id_09</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">id_31</th>
+<th data-quarto-table-cell-role="th">id_32</th>
+<th data-quarto-table-cell-role="th">id_33</th>
+<th data-quarto-table-cell-role="th">id_34</th>
+<th data-quarto-table-cell-role="th">id_35</th>
+<th data-quarto-table-cell-role="th">id_36</th>
+<th data-quarto-table-cell-role="th">id_37</th>
+<th data-quarto-table-cell-role="th">id_38</th>
+<th data-quarto-table-cell-role="th">DeviceType</th>
+<th data-quarto-table-cell-role="th">DeviceInfo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>2987004</td>
+<td>0.0</td>
+<td>70787.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>...</td>
+<td>samsung browser 6.2</td>
+<td>32.0</td>
+<td>2220x1080</td>
+<td>match_status:2</td>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>mobile</td>
+<td>SAMSUNG SM-G892A Build/NRD90M</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>2987008</td>
+<td>-5.0</td>
+<td>98945.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>-5.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>...</td>
+<td>mobile safari 11.0</td>
+<td>32.0</td>
+<td>1334x750</td>
+<td>match_status:1</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>mobile</td>
+<td>iOS Device</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>2987010</td>
+<td>-5.0</td>
+<td>191631.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>...</td>
+<td>chrome 62.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>desktop</td>
+<td>Windows</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>2987011</td>
+<td>-5.0</td>
+<td>221832.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>-6.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>...</td>
+<td>chrome 62.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>desktop</td>
+<td>NaN</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>2987016</td>
+<td>0.0</td>
+<td>7460.0</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>1.0</td>
+<td>0.0</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>0.0</td>
+<td>...</td>
+<td>chrome 62.0</td>
+<td>24.0</td>
+<td>1280x800</td>
+<td>match_status:2</td>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>desktop</td>
+<td>MacOS</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 41 columns</p>
+</div>
+</div>
+</div>
+<section id="columns" class="level2">
+<h2 class="anchored" data-anchor-id="columns">Columns</h2>
+<p><strong>Transaction Table</strong> TransactionDT: timedelta from a given reference datetime (not an actual timestamp) TransactionAMT: transaction payment amount in USD ProductCD: product code, the product for each transaction card1 - card6: payment card information, such as card type, card category, issue bank, country, etc. addr: address dist: distance P_ and (R__) emaildomain: purchaser and recipient email domain C1-C14: counting, such as how many addresses are found to be associated with the payment card, etc. The actual meaning is masked. D1-D15: timedelta, such as days between previous transaction, etc. M1-M9: match, such as names on card and address, etc. Vxxx: Vesta engineered rich features, including ranking, counting, and other entity relations. Categorical Features: ProductCD card1 - card6 addr1, addr2 P_emaildomain R_emaildomain M1 - M9</p>
+<p><strong>Identity Table</strong> Variables in this table are identity information – network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions. They’re collected by Vesta’s fraud protection system and digital security partners. (The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)</p>
+</section>
+<section id="missingness" class="level2">
+<h2 class="anchored" data-anchor-id="missingness">Missingness</h2>
+<div id="5fec09b0" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>missing_rate <span class="op">=</span> transactions_df.isnull().mean().sort_values(ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Total number of features: "</span>, transactions_df.shape[<span class="dv">1</span>])</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Number of features with missing values: "</span>, <span class="bu">len</span>(missing_rate[missing_rate<span class="op">&gt;</span><span class="dv">0</span>]))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> threshold <span class="kw">in</span> [<span class="fl">0.9</span>, <span class="fl">0.75</span>, <span class="fl">0.5</span>, <span class="fl">0.25</span>, <span class="fl">0.1</span>]:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> (missing_rate <span class="op">&gt;</span> threshold).<span class="bu">sum</span>()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Columns with &gt;</span><span class="sc">{</span>threshold<span class="sc">:.0%}</span><span class="ss"> missing: </span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Top 20 features with the highest share of missing values: </span><span class="ch">\n</span><span class="st">"</span>, missing_rate.head(<span class="dv">20</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total number of features:  394
+Number of features with missing values:  374
+Columns with &gt;90% missing: 2
+Columns with &gt;75% missing: 168
+Columns with &gt;50% missing: 174
+Columns with &gt;25% missing: 212
+Columns with &gt;10% missing: 282
+Top 20 features with the highest share of missing values: 
+ dist2    0.936284
+D7       0.934099
+D13      0.895093
+D14      0.894695
+D12      0.890410
+D6       0.876068
+D9       0.873123
+D8       0.873123
+V153     0.861237
+V149     0.861237
+V141     0.861237
+V146     0.861237
+V154     0.861237
+V162     0.861237
+V142     0.861237
+V158     0.861237
+V161     0.861237
+V157     0.861237
+V138     0.861237
+V139     0.861237
+dtype: float64</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="target-variable" class="level1">
+<h1>TARGET variable</h1>
+<div id="decdaaf8" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>counts <span class="op">=</span> transactions_df[TARGET_COL].value_counts()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>fraud_rate <span class="op">=</span> transactions_df[TARGET_COL].mean()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Total transactions: </span><span class="sc">{</span>transactions_df<span class="sc">.</span>shape[<span class="dv">0</span>]<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Fraudulent transactions: </span><span class="sc">{</span>counts[<span class="dv">1</span>]<span class="sc">:,}</span><span class="ss"> (</span><span class="sc">{</span>fraud_rate<span class="sc">:.2%}</span><span class="ss">)"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Legitimate transactions: </span><span class="sc">{</span>counts[<span class="dv">0</span>]<span class="sc">:,}</span><span class="ss"> (</span><span class="sc">{</span><span class="dv">1</span><span class="op">-</span>fraud_rate<span class="sc">:.2%}</span><span class="ss">)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Total transactions: 590,540
+Fraudulent transactions: 20,663 (3.50%)
+Legitimate transactions: 569,877 (96.50%)</code></pre>
+</div>
+</div>
+<div id="0dc59472" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">5</span>, <span class="dv">4</span>))</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>bars <span class="op">=</span> ax.bar(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    target_labels,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    counts,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span>target_colors,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    width<span class="op">=</span><span class="fl">0.5</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Number of transactions"</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Target class distribution"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> bar, val <span class="kw">in</span> <span class="bu">zip</span>(bars, counts):</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    ax.text(bar.get_x() <span class="op">+</span> bar.get_width()<span class="op">/</span><span class="dv">2</span>, bar.get_height()<span class="op">+</span><span class="dv">1000</span>, <span class="ss">f'</span><span class="sc">{</span>val<span class="sc">:,}</span><span class="ss">'</span>, ha<span class="op">=</span><span class="st">'center'</span>, fontsize<span class="op">=</span><span class="dv">10</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-6-output-1.png" width="470" height="357" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="time-patterns" class="level1">
+<h1>Time patterns</h1>
+<p>TransactionDT values represent second elapsed from a reference point (not an actual timestamp). However, we can extract from it day of the week and hour of day, which may be strog fraud signals.</p>
+<div id="308d0fad" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>nr_seconds_per_day <span class="op">=</span> <span class="dv">24</span><span class="op">*</span><span class="dv">60</span><span class="op">*</span><span class="dv">60</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>transactions_df[<span class="st">'hour'</span>] <span class="op">=</span> (transactions_df[<span class="st">'TransactionDT'</span>] <span class="op">%</span> nr_seconds_per_day <span class="op">//</span> <span class="dv">3600</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>transactions_df[<span class="st">'day_of_week'</span>] <span class="op">=</span> (transactions_df[<span class="st">'TransactionDT'</span>] <span class="op">%</span> (nr_seconds_per_day<span class="op">*</span><span class="dv">7</span>) <span class="op">//</span> nr_seconds_per_day).astype(<span class="bu">int</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\user\AppData\Local\Temp\ipykernel_14836\2186316027.py:2: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  transactions_df['hour'] = (transactions_df['TransactionDT'] % nr_seconds_per_day // 3600).astype(int)
+C:\Users\user\AppData\Local\Temp\ipykernel_14836\2186316027.py:3: PerformanceWarning: DataFrame is highly fragmented.  This is usually the result of calling `frame.insert` many times, which has poor performance.  Consider joining all columns at once using pd.concat(axis=1) instead. To get a de-fragmented frame, use `newframe = frame.copy()`
+  transactions_df['day_of_week'] = (transactions_df['TransactionDT'] % (nr_seconds_per_day*7) // nr_seconds_per_day).astype(int)</code></pre>
+</div>
+</div>
+<div id="8306562b" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>hourly_rate <span class="op">=</span> transactions_df.groupby(<span class="st">"hour"</span>)[TARGET_COL].mean().reset_index()</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">5</span>))</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>ax.bar(</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    hourly_rate[<span class="st">'hour'</span>],</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    hourly_rate[TARGET_COL]<span class="op">*</span><span class="dv">100</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span>target_colors[<span class="dv">1</span>],</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.8</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>ax.axhline(fraud_rate<span class="op">*</span><span class="dv">100</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, linewidth<span class="op">=</span><span class="dv">1</span>, label<span class="op">=</span><span class="ss">f'Overall fraud rate (</span><span class="sc">{</span>fraud_rate<span class="sc">:.1%}</span><span class="ss">)'</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Hour of day"</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Fraud Rate (%)"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Fraud Rate by Hour of Day"</span>)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-8-output-1.png" width="1430" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="66962a87" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>day_names <span class="op">=</span> [<span class="st">'Mon'</span>, <span class="st">'Tue'</span>, <span class="st">'Wed'</span>, <span class="st">'Thu'</span>, <span class="st">'Fri'</span>, <span class="st">'Sat'</span>, <span class="st">'Sun'</span>]</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>daily_rate <span class="op">=</span> transactions_df.groupby(<span class="st">"day_of_week"</span>)[TARGET_COL].mean().reset_index()</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">5</span>))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>ax.bar(</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    daily_rate[<span class="st">'day_of_week'</span>],</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    daily_rate[TARGET_COL]<span class="op">*</span><span class="dv">100</span>,</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span>target_colors[<span class="dv">1</span>],</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.8</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>ax.set_xticks(<span class="bu">range</span>(<span class="dv">7</span>))</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>ax.set_xticklabels(day_names)</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>ax.axhline(fraud_rate<span class="op">*</span><span class="dv">100</span>, color<span class="op">=</span><span class="st">"black"</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, linewidth<span class="op">=</span><span class="dv">1</span>, label<span class="op">=</span><span class="ss">f'Overall fraud rate (</span><span class="sc">{</span>fraud_rate<span class="sc">:.1%}</span><span class="ss">)'</span>)</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Day of week"</span>)</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Fraud Rate (%)"</span>)</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Fraud Rate by Day of week"</span>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-9-output-1.png" width="1430" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="transaction-amount" class="level1">
+<h1>Transaction amount</h1>
+<div id="b7cf03e7" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>legit <span class="op">=</span> transactions_df[transactions_df[TARGET_COL] <span class="op">==</span> <span class="dv">0</span>][<span class="st">'TransactionAmt'</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>fraud <span class="op">=</span> transactions_df[transactions_df[TARGET_COL] <span class="op">==</span> <span class="dv">1</span>][<span class="st">'TransactionAmt'</span>]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>txn_amount_summary <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    target_labels[<span class="dv">0</span>]: legit.describe(),</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    target_labels[<span class="dv">1</span>]: fraud.describe()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>txn_amount_summary</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Legitimate</th>
+<th data-quarto-table-cell-role="th">Fraudulent</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">count</th>
+<td>569877.000000</td>
+<td>20663.000000</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">mean</th>
+<td>134.511665</td>
+<td>149.244779</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">std</th>
+<td>239.395078</td>
+<td>232.212163</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">min</th>
+<td>0.251000</td>
+<td>0.292000</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">25%</th>
+<td>43.970000</td>
+<td>35.044000</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">50%</th>
+<td>68.500000</td>
+<td>75.000000</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">75%</th>
+<td>120.000000</td>
+<td>161.000000</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">max</th>
+<td>31937.391000</td>
+<td>5191.000000</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>The data is highly skewed, so using a logscale makes the distribution readable and meaningful.</p>
+<p>Most transactions (fraud or not) are relatively low-value. However, fraud is slightly more concentrated at lower amounts.</p>
+<div id="724451e0" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>bins <span class="op">=</span> np.logspace(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">80</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>ax.hist(legit, bins<span class="op">=</span>bins, alpha<span class="op">=</span><span class="fl">0.6</span>, color<span class="op">=</span>target_colors[<span class="dv">0</span>], label <span class="op">=</span> target_labels[<span class="dv">0</span>], density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>ax.hist(fraud, bins<span class="op">=</span>bins, alpha<span class="op">=</span><span class="fl">0.6</span>, color<span class="op">=</span>target_colors[<span class="dv">1</span>], label <span class="op">=</span> target_labels[<span class="dv">1</span>], density<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>ax.set_xscale(<span class="st">'log'</span>)</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">'Transaction amount (log scale)'</span>)</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">'Density'</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'Transaction Amount Distribution'</span>)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-11-output-1.png" width="662" height="468" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="v-features" class="level1">
+<h1>V-features</h1>
+<p>There’re 339 anonymised V-features, which are Vesta engineered rich features, including ranking, counting, and other entity relations.</p>
+<div id="47a5e611" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>v_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> transactions_df.columns <span class="cf">if</span> c.startswith(<span class="st">'V'</span>)]</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>v_missing <span class="op">=</span> transactions_df[v_cols].isnull().mean()</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">range</span>(<span class="bu">len</span>(v_cols)),</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sorted</span>(v_missing.values)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>ax.axhline(<span class="fl">0.5</span>, color<span class="op">=</span><span class="st">'black'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, label<span class="op">=</span><span class="st">"50% missing rate"</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>ax.fill_between(</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">range</span>(<span class="bu">len</span>(v_cols)),</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">sorted</span>(v_missing.values),</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    alpha<span class="op">=</span><span class="fl">0.2</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"V_feature rank, sorted by missing rate"</span>)</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Missing rate"</span>)</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Missing rate across V-features"</span>)</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>ax.legend()</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-12-output-1.png" width="815" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="card-features" class="level1">
+<h1>Card features</h1>
+<div id="846ea762" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>card_cols <span class="op">=</span> [c <span class="cf">for</span> c <span class="kw">in</span> transactions_df.columns <span class="cf">if</span> c.startswith(<span class="st">'card'</span>)]</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> card <span class="kw">in</span> card_cols:</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    tmp <span class="op">=</span> transactions_df.groupby(card)[TARGET_COL].agg([<span class="st">'mean'</span>, <span class="st">'count'</span>]).rename(columns<span class="op">=</span>{<span class="st">'mean'</span>: <span class="st">'fraud_rate'</span>, <span class="st">'count'</span>:<span class="st">'n'</span>}).sort_values(by<span class="op">=</span><span class="st">'fraud_rate'</span>, ascending<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    ax.bar(tmp.index, tmp[<span class="st">'fraud_rate'</span>]<span class="op">*</span><span class="dv">100</span>, color<span class="op">=</span>target_colors[<span class="dv">1</span>], alpha<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    ax.axhline(fraud_rate<span class="op">*</span><span class="dv">100</span>, linestyle<span class="op">=</span><span class="st">'--'</span>, color<span class="op">=</span><span class="st">'black'</span>, linewidth<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(<span class="st">'Fraud rate (%)'</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f'Fraud rate by Card Type (</span><span class="sc">{</span>card<span class="sc">}</span><span class="ss">)'</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    plt.tight_layout()</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    plt.show()</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># transactions_df.groupby('card6')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean': 'fraud_rate', 'count':'n'}).sort_values(by='fraud_rate', ascending=False)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-1.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-2.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-3.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-4.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-5.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="notes_files/figure-html/cell-13-output-6.png" width="662" height="470" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="email-domains" class="level1">
+<h1>Email domains</h1>
+</section>
+<section id="identity-table" class="level1">
+<h1>Identity table</h1>
 </section>
 
 </main>
