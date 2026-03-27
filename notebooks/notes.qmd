@@ -1,9 +1,11 @@
 ---
 title: "IEEE-CIS Fraud Detection - Exploratory Data Analsysis"
 
-format:
-  html:
-    code-fold: true
+format: html
+#   html:
+#     code-fold: true
+execute:
+  echo: false 
 editor: visual
 engine: jupyter
 ---
@@ -76,6 +78,7 @@ Variables in this table are identity information – network connection informat
 ## Missingness
 
 ```{python}
+
 missing_rate = transactions_df.isnull().mean().sort_values(ascending=False)
 print("Total number of features: ", transactions_df.shape[1])
 print("Number of features with missing values: ", len(missing_rate[missing_rate>0]))
@@ -84,7 +87,8 @@ for threshold in [0.9, 0.75, 0.5, 0.25, 0.1]:
     n = (missing_rate > threshold).sum()
     print(f"Columns with >{threshold:.0%} missing: {n}")
 
-print("Top 20 features with the highest share of missing values: \n", missing_rate.head(20))
+print()
+print("Top 10 features with the highest share of missing values: \n", missing_rate.head(10))
 
 ```
 
@@ -234,6 +238,8 @@ ax.set_title("Missing rate across V-features")
 ax.legend()
 plt.show()
 
+
+
 ```
 
 # Card features
@@ -259,8 +265,156 @@ for card in card_cols:
 ```
 
 # Email domains
+P_ and (R__) emaildomain: purchaser and recipient email domain.
+
+```{python}
+
+email_rate = transactions_df.groupby('P_emaildomain')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean': 'fraud_rate', 'count':'n'}).sort_values(by='fraud_rate', ascending=False).head(20)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.barh(email_rate.index[::-1], email_rate['fraud_rate'][::-1]*100, color=target_colors[1], alpha=0.8)
+ax.axvline(fraud_rate*100, color='black', linestyle='--', linewidth=1, label='Overall Fraud Rate')
+ax.set_xlabel('Fraud Rate (%)')
+ax.set_title('Fraud Rate by Purchaser Email Domain (top 20)')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+```
+
+
+```{python}
+
+email_rate = transactions_df.groupby('R_emaildomain')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean': 'fraud_rate', 'count':'n'}).sort_values(by='fraud_rate', ascending=False).head(20)
+
+fig, ax = plt.subplots(figsize=(10, 5))
+ax.barh(email_rate.index[::-1], email_rate['fraud_rate'][::-1]*100, color=target_colors[1], alpha=0.8)
+ax.axvline(fraud_rate*100, color='black', linestyle='--', linewidth=1, label='Overall Fraud Rate')
+ax.set_xlabel('Fraud Rate (%)')
+ax.set_title('Fraud Rate by Recipient Email Domain (top 20)')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+```
+
 
 # Identity table
 
+*"Variables in the Identity table are identity information: network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions. They're collected by Vesta’s fraud protection system and digital security partners. (The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)."*
+
+There're 38 anonymised ID columns along with DeviceType and DeviceInfo.
+
+```{python}
+
+df = transactions_df.copy()
+df = df.merge(identity_df, on='TransactionID', how='left', indicator=True)
+df['has_identity'] = (df['_merge']=='both').astype(int)
+
+identity_coverage = df['has_identity'].mean()
+print(f'Transactions with identity records {identity_coverage:.1%}')
+print(f'Transactions without identity records {1-identity_coverage:.1%}')
+
+```
+
+```{python}
+
+identity_fr = df.groupby('has_identity')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean':'fraud_rate', 'count':'n'})
+
+fig, ax = plt.subplots()
+bars = ax.bar(identity_fr.index, 100*identity_fr['fraud_rate'], color=target_colors[1], alpha=0.8)
+for bar, row in zip(bars, identity_fr.itertuples()):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height(), f'FR: {row.fraud_rate:.1%} in {row.n:,} records', ha='center')
+
+ax.set_xticks(range(len(identity_fr)))
+ax.set_xticklabels(['no','yes'])
+ax.set_xlabel('has identity records')
+ax.set_ylabel('Fraud Rate (%)')
+ax.set_title('Fraud Rate by Identity Records Presence')
+plt.tight_layout()
+plt.show()
+
+# identity_df.DeviceInfo.value_counts()
+# df.iloc[:,-40:]
+```
 
 
+
+```{python}
+
+dev_info = df.groupby('DeviceInfo')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean':'fraud_rate', 'count':'n'}).sort_values(by='n', ascending=False).head(20)
+dev_type = df.groupby('DeviceType')[TARGET_COL].agg(['mean', 'count']).rename(columns={'mean':'fraud_rate', 'count':'n'})
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+bars = axes[0].bar(dev_type.index, 100*dev_type['fraud_rate'], color=target_colors[1], alpha=0.8)
+for bar, row in zip(bars, dev_type.itertuples()):
+    axes[0].text(bar.get_x() + bar.get_width()/2, bar.get_height(), f'FR: {row.fraud_rate:.1%} ({row.n:,})', ha='center')
+axes[0].set_xlabel('Device Type')
+axes[0].set_ylabel('Fraud Rate (%)')
+axes[0].set_title('Fraud Rate by Device Type')
+
+bars = axes[1].barh(dev_info.index, 100*dev_info['fraud_rate'], color=target_colors[1], alpha=0.8)
+axes[1].tick_params(axis='x', rotation=90)
+axes[1].set_xlabel('Fraud Rate (%)')
+axes[1].set_title('Fraud Rate by Device Info (top 20)')
+
+plt.tight_layout()
+plt.show()
+```
+
+# Temporal split
+
+
+```{python}
+
+txn_sorted = transactions_df.sort_values('TransactionDT')
+split_idx = int(len(txn_sorted) * 0.75)
+split_date = txn_sorted['TransactionDT'].iloc[split_idx]
+
+
+txn_sorted['time_bin'] = pd.cut(txn_sorted['TransactionDT'], bins=50, labels=False)
+split_bin = txn_sorted['time_bin'].iloc[split_idx]
+time_fr = txn_sorted.groupby('time_bin')[TARGET_COL].mean()
+
+fig, ax = plt.subplots(figsize=(10,5))
+ax.plot(time_fr.index, time_fr.values*100, color=target_colors[1])
+ax.axvline(split_bin, color='black', linestyle='--', linewidth=1, label='Train/Test Split (75%)')
+ax.set_xlabel('Time bin')
+ax.set_ylabel('Fraud Rate (%)')
+ax.set_title('Fraud Rate Over Time')
+ax.legend()
+plt.tight_layout()
+plt.show()
+
+```
+
+The fraud rate within training and testing subsets is similar, and the temporal split is clean.
+Large divergence would signal concept drift between periods.
+
+```{python}
+
+print('Fraud Rate within subsets:')
+print(f'     Train: {txn_sorted[:split_idx][TARGET_COL].mean():.2%}')
+print(f'     Test: {txn_sorted[split_idx:][TARGET_COL].mean():.2%}')
+
+# txn_sorted['split_set'] = 
+
+```
+
+# Key Takeaways
+
+```{python}
+# EDA summary
+print(f'Fraud Rate: {fraud_rate:.2%}')
+print(f'Identity Coverage: {identity_coverage:.2%}')
+print(f'Temporal Split (75:25) at Index: {split_idx} and DT: {split_date:,}')
+print(f'From {len(v_missing)} V_features discard those with NA rate >50% ({(v_missing > 0.5).sum()} discarded and {(v_missing <= 0.5).sum()} kept)')
+
+```
+
+- As the dataset is imbalanced, we should use PR-AUC as primary metric (not ROC-AUC or accuracy) and handle the imbalance during training (scale_pos_weight).
+- There're features with a high missingness rate (drop them or impute if necessary). Do not drop identity columns with high NA rate, as the lack of values could have predictive power.
+- Feature engineer: add time related features (night/day, weekend)
+- Use categorical variables (email domains and card columns) and encode them
+- Use temporal split.
