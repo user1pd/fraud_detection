@@ -17,7 +17,7 @@ DATA_DIR = os.path.join(ROOT_DIR, "data", "raw")
 OUTPUT_DIR = os.path.join(ROOT_DIR, "outputs")
 
 TRANSACTION_PATH = os.path.join(DATA_DIR, "train_transaction.csv")
-IDENTITY_PATH = os.path.join(DATA_DIR, "train_transaction.csv")
+IDENTITY_PATH = os.path.join(DATA_DIR, "train_identity.csv")
 
 # print("file:", __file__)
 # print("abspath:", os.path.abspath(__file__))
@@ -30,7 +30,7 @@ IDENTITY_PATH = os.path.join(DATA_DIR, "train_transaction.csv")
 # -------------------------------------
 
 TARGET_COLUMN = "isFraud"
-TIME_COLUMN = "TransactionDT" #timedelta from a given reference datetime (not an actual timestamp)
+TIME_COLUMN = "TransactionDT"
 ID_COLUMN = "TransactionID"
 
 TEMPORAL_SPLIT_RATIO = 0.75

@@ -14,7 +14,7 @@ from config import (TRANSACTION_PATH, IDENTITY_PATH, TARGET_COLUMN, TIME_COLUMN,
 
 class TransactionData:
     """
-    Loads, merges, and holds the dataset.
+    Loads, merges, splits, and holds the dataset.
     """
 
     def __init__(
@@ -28,26 +28,32 @@ class TransactionData:
         self.df = None
         self.X_train = None
         self.X_test = None
+        self.y_train = None
+        self.y_test = None
+
+        self.feature_names = None
+        self.split_time = None
+        self._loaded = False
 
     def load(self):
         transactions_df = pd.read_csv(self.transaction_path)
-        print("Transactions loaded.")
+        print(f"Transactions loaded: {transactions_df.shape}")
 
         identity_df = pd.read_csv(self.identity_path)
-        print("Identity records loaded.")
+        print(f"Identity records loaded: {identity_df.shape}")
 
         df = transactions_df.merge(identity_df, on=ID_COLUMN, how="left")
         print(f"Merged df shape: {df.shape}")
 
         df = self._clean(df)
-        print("Data cleaned")
+        print("Data cleaned.")
 
+        self.df = df
         df = self._temporal_split(df)
         print("Data splited temporally.")
         
-        # print summary
-
         self._loaded = True
+        self._print_summary()
         return self
     
     # def get_split(self):
@@ -96,18 +102,16 @@ class TransactionData:
         Sort by time and split at TEMPORAL_SPLIT_RATIO.
         """
         df_sorted = df.sort_values(TIME_COLUMN).reset_index(drop=True)
-        print(1)
         split_idx = int(len(df_sorted) * TEMPORAL_SPLIT_RATIO)
-        self.split_time = df_sorted[TIME_COLUMN].iloc(split_idx)
-        print(2)
+        self.split_time = df_sorted[TIME_COLUMN].iloc[split_idx]
+
         train = df_sorted.iloc[:split_idx]
         test = df_sorted.iloc[split_idx:]
-        print(3)
         feature_cols = [
             c for c in df_sorted.columns
             if c != TARGET_COLUMN
         ]
-        print(4)
+  
         self.feature_names = feature_cols
         self.X_train = train[feature_cols]
         self.X_test = test[feature_cols]
@@ -119,10 +123,16 @@ class TransactionData:
         if not self._loaded:
             raise RuntimeError("Data not loaded.")
 
+    def _print_summary(self):
+        print("=================================")
+        print(f"Dataset split at TransactionDT {self.split_time:,}")
+        print(f"Training set shape {self.X_train.shape} and a fraud rate of {self.y_train.mean():.2%}")
+        print(f"Testing set shape {self.X_test.shape} and a fraud rate of {self.y_test.mean():.2%}")
+        print(f"Number of features: {len(self.feature_names)}")
+        print("=================================")
         
     # ------------------------------------------
     # OTHER
     # ------------------------------------------
 
-td = TransactionData(TRANSACTION_PATH, IDENTITY_PATH)
-td.load()
+

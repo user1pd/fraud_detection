@@ -10,6 +10,7 @@ fraud_detection/
 │   ├── dataset.py       # TransactionData  — loads, merges train_transaction + train_identity, temporal split
 │   ├── features.py      # FeatureEngineer  — velocity features, aggregations, card behaviour, time features
 │   ├── model.py         # FraudModel       — LightGBM + Logistic Regression, cost-sensitive evaluation
+|   ├── evaluation.py
 │   ├── explainer.py     # FraudExplainer   — SHAP, alert narrative generation
 │   └── pipeline.py      # FraudPipeline    — orchestrates everything
 │
