@@ -5,7 +5,8 @@ from fraud_detection.dataset import TransactionData
 
 data = TransactionData()
 print(data.__dict__)
-# data.load()
+
+data.load()
 
 
 
@@ -18,4 +19,5 @@ print(data.__dict__)
 # print(data.df.shape)
 # print(data.df.head())
 # print(data.df.columns.tolist())
+
 

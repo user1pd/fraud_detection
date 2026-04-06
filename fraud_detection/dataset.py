@@ -56,14 +56,21 @@ class TransactionData:
         self._print_summary()
         return self
     
-    # def get_split(self):
-    #     self._check_loaded()
-    #     return 
+    def get_split(self):
+        self._check_loaded()
+        return self.X_train, self.X_test, self.y_train, self.y_test
 
     # defines how an object is represented as a string, mainly for developers/debugging.
     # When you print an object or inspect it in the console, Python calls __repr__:
     def __repr__(self):
-        pass
+        if not self._loaded:
+            return "TransactionData (not loaded)"
+        return (
+            f"TransactionData("
+            f"rows: {len(self.df):,}, "
+            f"features: {len(self.feature_names)}, "
+            f"fraud_rate: {self.df[TARGET_COLUMN].mean():.2%})"
+        )
 
     # ------------------------------------------
     # PRIVATE
@@ -132,7 +139,22 @@ class TransactionData:
         print("=================================")
         
     # ------------------------------------------
-    # OTHER
+    # PROPERTIES
     # ------------------------------------------
+
+    @property
+    def fraud_rate(self):
+        self._check_loaded()
+        return self.df[TARGET_COLUMN].mean()
+    
+    @property
+    def shape(self):
+        self._check_loaded()
+        return self.df.shape
+    
+    @property
+    def train_test_sizes(self):
+        self._check_loaded()
+        return len(self.X_train), len(self.X_test)
 
 
